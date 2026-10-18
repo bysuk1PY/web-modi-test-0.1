@@ -1,0 +1,544 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#111318">
+    <title>mod-I — Панель владельца</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .owner-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .owner-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .owner-info small {
+            opacity: 0.65;
+        }
+
+        .logout-link {
+            color: #b7a5ff;
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .logout-link:hover {
+            text-decoration: underline;
+        }
+
+        .live-value {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .live-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #888;
+        }
+
+        .live-dot.online {
+            background: #4ade80;
+        }
+
+        .live-dot.offline {
+            background: #fb7185;
+        }
+
+        .stat-card strong {
+            overflow-wrap: anywhere;
+        }
+
+        .status-message {
+            color: #a7a9bb;
+            font-size: 13px;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <a class="brand" href="/">
+            <span class="brand-icon">M</span>
+            <span>mod-I<small>CONTROL PANEL</small></span>
+        </a>
+
+        <div class="nav-label">УПРАВЛЕНИЕ</div>
+
+        <nav>
+            <a class="nav-item active" href="#dashboard">▦ Главная</a>
+            <a class="nav-item" href="#server">▣ Мой сервер</a>
+            <a class="nav-item" href="#commands">⌘ Команды</a>
+            <a class="nav-item" href="#builder">＋ Конструктор команд</a>
+            <a class="nav-item" href="#templates">▤ Категории и шаблоны</a>
+            <a class="nav-item" href="#automation">⟳ Автоматизация</a>
+        </nav>
+
+        <div class="nav-label">НАСТРОЙКИ</div>
+
+        <nav>
+            <a class="nav-item" href="#permissions">♙ Ранги и права</a>
+            <a class="nav-item" href="#limits">◷ Лимиты и санкции</a>
+            <a class="nav-item" href="#logs">≡ Журналы</a>
+            <a class="nav-item" href="#settings">⚙ Настройки</a>
+            <a class="nav-item" href="#security">◇ Безопасность</a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <span class="status-dot"></span>
+            <span>Панель запущена</span>
+            <small>Локальный режим</small>
+        </div>
+    </aside>
+
+    <main class="main" id="dashboard">
+        <header class="topbar">
+            <div>
+                <div class="breadcrumb">mod-I / Панель владельца</div>
+                <h1>Главная</h1>
+                <p class="subtitle">Управление Discord-ботом mod-I</p>
+            </div>
+
+            <div class="owner-label">
+                <span class="owner-avatar">M</span>
+                <span class="owner-info">
+                    <span id="owner-name">Владелец</span>
+                    <small>Авторизован через Discord</small>
+                    <a class="logout-link" href="/logout">Выйти</a>
+                </span>
+            </div>
+        </header>
+
+        <section class="welcome">
+            <div>
+                <span class="eyebrow">CONTROL CENTER</span>
+                <h2>Всё управление — в одном месте.</h2>
+                <p>Настраивай команды, права, ограничения и автоматизацию mod-I.</p>
+            </div>
+            <div class="welcome-symbol">M</div>
+        </section>
+
+        <section class="section">
+            <div class="section-heading">
+                <div>
+                    <h2>Обзор системы</h2>
+                    <p>Сведения о проекте и состоянии базы данных</p>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+
+                <article class="stat-card">
+                    <span class="stat-label">Подключение к Discord</span>
+                    <strong id="gateway-status">Проверка...</strong>
+                    <span class="stat-note" id="gateway-details">
+                        Получаем состояние бота
+                    </span>
+                </article>
+
+                <article class="stat-card">
+                    <span class="stat-label">Discord API</span>
+                    <strong id="bot-status">Проверка...</strong>
+                    <span class="stat-note" id="bot-name">
+                        Проверяем подключение
+                    </span>
+                </article>
+                <article class="stat-card">
+                    <span class="stat-label">Discord-серверы</span>
+                    <strong>1</strong>
+                    <span class="stat-note">Целевой режим — один сервер</span>
+                </article>
+
+                <article class="stat-card">
+                    <span class="stat-label">Конструктор команд</span>
+                    <strong>Готовится</strong>
+                    <span class="stat-note">Подключение в разработке</span>
+                </article>
+
+                <article class="stat-card">
+                    <span class="stat-label">Состояние базы данных</span>
+                    <strong class="live-value">
+                        <span class="live-dot" id="database-dot"></span>
+                        <span id="database-status">Загрузка...</span>
+                    </strong>
+                    <span class="stat-note">Существующая SQLite-база</span>
+                </article>
+
+                <article class="stat-card">
+                    <span class="stat-label">Зарегистрированные нарушения</span>
+                    <strong id="violations-count">Загрузка...</strong>
+                    <span class="stat-note">Записи в базе данных</span>
+                </article>
+            </div>
+
+            <p class="status-message" id="status-message" role="status">
+                Получаем данные из базы...
+            </p>
+        </section>
+
+        <section class="section">
+            <div class="section-heading">
+                <div>
+                    <h2>Разделы управления</h2>
+                    <p>Выбери, чем хочешь заняться</p>
+                </div>
+            </div>
+
+            <div class="modules-grid">
+                <a class="module-card" href="#commands">
+                    <span class="module-icon">⌘</span>
+                    <h3>Команды</h3>
+                    <p>Настройка существующих команд и их параметров.</p>
+                    <span class="module-link">Открыть раздел →</span>
+                </a>
+
+                <a class="module-card" href="#builder">
+                    <span class="module-icon">＋</span>
+                    <h3>Конструктор</h3>
+                    <p>Создание собственных команд пошаговым мастером.</p>
+                    <span class="module-link">Открыть раздел →</span>
+                </a>
+
+                <a class="module-card" href="#permissions">
+                    <span class="module-icon">♙</span>
+                    <h3>Ранги и права</h3>
+                    <p>Настройка иерархии и разрешений участников.</p>
+                    <span class="module-link">Открыть раздел →</span>
+                </a>
+
+                <a class="module-card" href="#limits">
+                    <span class="module-icon">◷</span>
+                    <h3>Лимиты и санкции</h3>
+                    <p>Ограничения действий и автоматические санкции.</p>
+                    <span class="module-link">Открыть раздел →</span>
+                </a>
+
+                <a class="module-card" href="#automation">
+                    <span class="module-icon">⟳</span>
+                    <h3>Автоматизация</h3>
+                    <p>Сценарии, условия и поддерживаемые события.</p>
+                    <span class="module-link">Открыть раздел →</span>
+                </a>
+
+                <a class="module-card" href="#logs">
+                    <span class="module-icon">≡</span>
+                    <h3>Журналы</h3>
+                    <p>История действий и события работы бота.</p>
+                    <span class="module-link">Открыть раздел →</span>
+                </a>
+            </div>
+        </section>
+
+        <footer>
+            mod-I Control Panel <span>·</span> Начальная версия интерфейса
+        </footer>
+
+
+        <section class="module-card" id="server-settings">
+            <h2>Настройки сервера</h2>
+            <p class="stat-note">Значения загружаются из базы mod-I.</p>
+
+            <div class="settings-form">
+                <label for="limit-warn">Лимит предупреждений</label>
+                <input id="limit-warn" type="number" min="1" max="100">
+
+                <label for="limit-timeout">Лимит тайм-аутов</label>
+                <input id="limit-timeout" type="number" min="1" max="100">
+
+                <label for="auto-timeout-threshold">
+                    Порог автоматического тайм-аута
+                </label>
+                <input
+                    id="auto-timeout-threshold"
+                    type="number"
+                    min="1"
+                    max="100"
+                >
+
+                <label for="auto-timeout-minutes">
+                    Длительность автоматического тайм-аута (минуты)
+                </label>
+                <input
+                    id="auto-timeout-minutes"
+                    type="number"
+                    min="1"
+                    max="40320"
+                >
+
+                <button id="load-settings" type="button">
+                    Загрузить настройки
+                </button>
+
+                <button id="save-settings" type="button">
+                    Сохранить настройки
+                </button>
+
+                <p id="settings-message" role="status">
+                    Нажми «Загрузить настройки».
+                </p>
+            </div>
+        </section>
+
+        <script>
+        async function loadServerSettings() {
+            const message = document.getElementById("settings-message");
+            message.textContent = "Загружаем настройки...";
+
+            try {
+                const response = await fetch("/api/server-settings", {
+                    cache: "no-store"
+                });
+
+                if (!response.ok) {
+                    throw new Error("Не удалось загрузить настройки");
+                }
+
+                const data = await response.json();
+                const settings = data.settings;
+
+                document.getElementById("limit-warn").value =
+                    settings.limit_warn ?? "";
+
+                document.getElementById("limit-timeout").value =
+                    settings.limit_timeout ?? "";
+
+                document.getElementById("auto-timeout-threshold").value =
+                    settings.auto_timeout_threshold ?? "";
+
+                document.getElementById("auto-timeout-minutes").value =
+                    settings.auto_timeout_minutes ?? "";
+
+                message.textContent = "Настройки успешно загружены.";
+            } catch (error) {
+                message.textContent = "Ошибка загрузки. Проверь авторизацию и сервер.";
+            }
+        }
+
+        document.getElementById("load-settings").addEventListener(
+            "click",
+            loadServerSettings
+        );
+
+        document.getElementById("save-settings").addEventListener(
+            "click",
+            async () => {
+                const message = document.getElementById("settings-message");
+
+                const payload = {
+                    limit_warn: Number(
+                        document.getElementById("limit-warn").value
+                    ),
+                    limit_timeout: Number(
+                        document.getElementById("limit-timeout").value
+                    ),
+                    auto_timeout_threshold: Number(
+                        document.getElementById("auto-timeout-threshold").value
+                    ),
+                    auto_timeout_minutes: Number(
+                        document.getElementById("auto-timeout-minutes").value
+                    )
+                };
+
+                if (Object.values(payload).some(
+                    value => !Number.isInteger(value) || value < 1
+                )) {
+                    message.textContent = "Введи целые числа больше нуля.";
+                    return;
+                }
+
+                message.textContent = "Сохраняем настройки...";
+
+                try {
+                    const response = await fetch("/api/server-settings", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(
+                            result.detail || result.error || "Ошибка сохранения"
+                        );
+                    }
+
+                    message.textContent = "Настройки сохранены.";
+                } catch (error) {
+                    message.textContent = error.message;
+                }
+            }
+        );
+
+        </script>
+
+    </main>
+
+    <script>
+        async function updateModIStatus() {
+            const databaseStatus = document.getElementById("database-status");
+            const violationsCount = document.getElementById("violations-count");
+            const databaseDot = document.getElementById("database-dot");
+            const statusMessage = document.getElementById("status-message");
+            const botStatus = document.getElementById("bot-status");
+            const botName = document.getElementById("bot-name");
+            const gatewayStatus = document.getElementById("gateway-status");
+            const gatewayDetails = document.getElementById("gateway-details");
+
+            try {
+                const response = await fetch("/api/status", {
+                    cache: "no-store"
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    statusMessage.textContent =
+                        "Сессия завершена. Войди через Discord снова.";
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error("HTTP " + response.status);
+                }
+
+                const data = await response.json();
+                const gatewayResponse = await fetch("/api/gateway-status", {
+                    cache: "no-store"
+                });
+
+                if (gatewayResponse.ok) {
+                    const gateway = await gatewayResponse.json();
+
+                    gatewayStatus.textContent = gateway.connected
+                        ? "Онлайн"
+                        : "Отключён";
+
+                    gatewayDetails.textContent = gateway.connected
+                        ? `Задержка: ${gateway.latency_ms ?? "—"} мс`
+                        : gateway.message;
+                }
+
+                const botResponse = await fetch("/api/bot-status", {
+                    cache: "no-store"
+                });
+
+                if (botResponse.ok) {
+                    const botData = await botResponse.json();
+
+                    botStatus.textContent = botData.connected
+                        ? "API доступен"
+                        : "Нет доступа";
+
+                    botName.textContent = botData.connected
+                        ? "Бот: " + botData.name
+                        : botData.message;
+                }
+
+                databaseStatus.textContent = data.database;
+
+                if (data.violations === null) {
+                    violationsCount.textContent = "—";
+                } else {
+                    violationsCount.textContent = data.violations;
+                }
+
+                const connected = data.database === "подключена";
+
+                databaseDot.classList.toggle("online", connected);
+                databaseDot.classList.toggle("offline", !connected);
+
+                statusMessage.textContent = connected
+                    ? "Данные обновлены. Последняя проверка: " +
+                      new Date().toLocaleTimeString("ru-RU")
+                    : "Проверь путь к базе данных и её доступность.";
+
+            } catch (error) {
+                databaseStatus.textContent = "Недоступна";
+                violationsCount.textContent = "—";
+                databaseDot.classList.remove("online");
+                databaseDot.classList.add("offline");
+                statusMessage.textContent =
+                    "Не удалось получить данные. Проверь работу сайта и API.";
+                console.error("Ошибка обновления mod-I:", error);
+            }
+        }
+
+        updateModIStatus();
+        setInterval(updateModIStatus, 10000);
+
+
+        const mainContent = document.querySelector("main");
+        const allSections = Array.from(
+            mainContent.querySelectorAll(":scope > section")
+        );
+
+        const dashboardSections = allSections.filter(
+            section => section.id !== "server-settings"
+        );
+
+        const settingsSection = document.getElementById("server-settings");
+
+        function showPage() {
+            const page = location.hash.slice(1) || "dashboard";
+            const title = sectionNames[page] ? page : "dashboard";
+
+            dashboardSections.forEach(section => {
+                section.hidden = title !== "dashboard";
+            });
+
+            if (settingsSection) {
+                settingsSection.hidden = title !== "settings";
+            }
+
+            document.querySelectorAll(".nav-item").forEach(link => {
+                const active = link.getAttribute("href") === "#" + title;
+                link.classList.toggle("active", active);
+            });
+
+            const heading = mainContent.querySelector("header h1");
+            if (heading) {
+                heading.textContent = sectionNames[title];
+            }
+
+            const breadcrumb = mainContent.querySelector(".breadcrumb");
+            if (breadcrumb) {
+                breadcrumb.textContent = "mod-I / " + sectionNames[title];
+            }
+
+            if (title === "settings") {
+                loadServerSettings();
+            }
+        }
+
+        document.querySelectorAll(
+            '.nav-item, .module-card[href^="#"]'
+        ).forEach(link => {
+            link.addEventListener("click", event => {
+                const page = link.getAttribute("href").slice(1);
+
+                if (sectionNames[page]) {
+                    event.preventDefault();
+                    location.hash = page;
+                }
+            });
+        });
+
+        window.addEventListener("hashchange", showPage);
+        showPage();
+
+    </script>
+
+</body>
+</html>
